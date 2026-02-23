@@ -36,12 +36,46 @@ describe('integration', () => {
     assert.strictEqual(run(tmp).status, 0);
 
     const output = fs.readFileSync(path.join(tmp, 'depskills.md'), 'utf8');
-    assert.match(output, /This project comes with dependencies/);
-
     const json = JSON.parse(output.match(/```json\n(.+)\n```/)[1]);
     assert.deepStrictEqual(json, {
       'some-lib': [['some helpers', 'useful helpers', 'skills/SKILL.md']]
     });
+  });
+
+  it('output is wrapped in dependency-skills tags', () => {
+    const tmp = makeTmp(); tmps.push(tmp);
+    fs.writeFileSync(path.join(tmp, 'package.json'), JSON.stringify({ dependencies: { 'some-lib': '^1' } }));
+    writeSkill(tmp, 'some-lib', 'SKILL.md', { name: 'a skill', description: 'does things' });
+
+    run(tmp);
+
+    const output = fs.readFileSync(path.join(tmp, 'depskills.md'), 'utf8');
+    assert.ok(output.startsWith('<dependency-skills>'), 'should open with <dependency-skills>');
+    assert.ok(output.trimEnd().endsWith('</dependency-skills>'), 'should close with </dependency-skills>');
+  });
+
+  it('output contains BLOCKING REQUIREMENT instruction', () => {
+    const tmp = makeTmp(); tmps.push(tmp);
+    fs.writeFileSync(path.join(tmp, 'package.json'), JSON.stringify({ dependencies: { 'some-lib': '^1' } }));
+    writeSkill(tmp, 'some-lib', 'SKILL.md', { name: 'a skill', description: 'does things' });
+
+    run(tmp);
+
+    const output = fs.readFileSync(path.join(tmp, 'depskills.md'), 'utf8');
+    assert.match(output, /BLOCKING REQUIREMENT/);
+  });
+
+  it('security note appears after the json block', () => {
+    const tmp = makeTmp(); tmps.push(tmp);
+    fs.writeFileSync(path.join(tmp, 'package.json'), JSON.stringify({ dependencies: { 'some-lib': '^1' } }));
+    writeSkill(tmp, 'some-lib', 'SKILL.md', { name: 'a skill', description: 'does things' });
+
+    run(tmp);
+
+    const output = fs.readFileSync(path.join(tmp, 'depskills.md'), 'utf8');
+    const jsonEnd = output.indexOf('```\n\n');
+    const securityIdx = output.indexOf('Security:');
+    assert.ok(securityIdx > jsonEnd, 'security note should appear after the json block');
   });
 
   it('picks up multiple SKILL.md files from the same package', () => {
