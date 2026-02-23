@@ -59,4 +59,14 @@ describe('parseFrontmatter', () => {
   it('returns empty object when frontmatter block is empty', () => {
     assert.deepStrictEqual(parseFrontmatter('---\n\n---'), {});
   });
+
+  it('skips block scalar values (|) rather than storing the indicator as the value', () => {
+    const result = parseFrontmatter('---\nname: foo\ndescription: |\n  line one\n  line two\n---');
+    assert.strictEqual(result.description, undefined);
+  });
+
+  it('skips block scalar values (>) with chomping indicators', () => {
+    const result = parseFrontmatter('---\nname: foo\ndescription: >-\n---');
+    assert.strictEqual(result.description, undefined);
+  });
 });

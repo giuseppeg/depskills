@@ -9,6 +9,7 @@ export function parseFrontmatter(content) {
     const key = line.slice(0, colon).trim();
     if (!key) continue;
     let val = line.slice(colon + 1).trim();
+    if (/^[|>][-+0-9]*$/.test(val)) continue; // block scalar, unsupported
     if (
       (val.startsWith('"') && val.endsWith('"')) ||
       (val.startsWith("'") && val.endsWith("'"))

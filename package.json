@@ -1,18 +1,31 @@
 {
   "name": "depskills",
   "version": "0.0.1",
-  "description": "Scans installed dependencies for SKILL.md files and generates a depskills.md index for AI assistants",
+  "description": "Scans installed dependencies for SKILL.md files and copies them into .agent/skills/ for AI assistants to discover",
   "author": "Giuseppe Gurgone",
   "license": "MIT",
   "type": "module",
-  "main": "index.js",
   "bin": {
     "depskills": "index.js"
   },
-  "files": ["README.md", "LICENSE.md", "index.js", "lib.js"],
+  "files": [
+    "README.md",
+    "LICENSE.md",
+    "index.js",
+    "lib.js"
+  ],
   "scripts": {
     "test": "node --test"
   },
-  "keywords": ["ai", "skills", "agent", "llm", "claude", "dependencies"],
-  "engines": { "node": ">=22" }
+  "keywords": [
+    "ai",
+    "skills",
+    "agent",
+    "llm",
+    "claude",
+    "dependencies"
+  ],
+  "engines": {
+    "node": ">=22"
+  }
 }

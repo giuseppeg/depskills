@@ -1,14 +1,8 @@
 # depskills
 
-Scans installed dependencies for `SKILL.md` files and generates a `depskills.md` index that AI assistants can read.
+Scans installed dependencies for `SKILL.md` files and copies them into `.agent/skills/` so AI assistants can discover them automatically.
 
-The idea is that you reference `@depskills.md` in your project's `CLAUDE.md` or `AGENTS.md` so the assistant automatically knows what skills your dependencies ship.
-
-## ‼️ Security
-
-`depskills.md` is generated from files shipped inside your npm dependencies. A malicious package could include prompt injection attempts in its `SKILL.md`.
-
-**BEFORE referencing `depskills.md` in your `AGENTS.md` or `CLAUDE.md`, open it and review its contents.** Check that the skill names and descriptions look legitimate and do not contain instructions disguised as skill metadata. Only reference it once you are satisfied it is safe.
+The idea is that skills, like docs, should ship with the package that owns them and be vendored in your repo so changes are reviewable via git.
 
 ## Usage
 
@@ -26,17 +20,27 @@ Add to your `package.json`:
 }
 ```
 
-Then review `depskills.md` carefully, and if it looks good reference the generated file in your `CLAUDE.md` or `AGENTS.md`:
+On each install, depskills syncs skill folders from your dependencies into `.agent/skills/`. Commit `.agent/skills/` to your repo — the diff is how you review changes.
 
-```markdown
-@depskills.md
-```
+## Security
+
+Skill files are generated from content shipped inside your npm dependencies. A malicious package could include prompt injection attempts in its `SKILL.md` or accompanying files.
+
+**Before committing changes to `.agent/skills/`, review the diff carefully.** Check that skill names, descriptions, and file contents look legitimate and do not contain instructions disguised as skill metadata.
+
+depskills prints a notice when new skills are added. It is silent otherwise — use `git diff` to review any content changes.
 
 ## How it works
 
-Packages can ship a `SKILL.md` file (anywhere in their directory) with a name and description in the frontmatter. When you run `depskills`, it walks your `dependencies` and `devDependencies`, collects every `SKILL.md` it finds, and writes a `depskills.md` at your project root with a structured index of all available skills.
+Packages can ship a `SKILL.md` file inside a named subdirectory (e.g. `skills/my-skill/SKILL.md`) with a `name` and `description` in the frontmatter. When you run `depskills`, it walks your `dependencies` and `devDependencies`, finds every skill folder, and copies each one into `.agent/skills/<skill-name>/`.
 
-This builds on the idea that libraries will and should ship versioned skills alongside their code. depskills makes them automatically discoverable by AI assistants without any manual configuration.
+This follows the `.agent/skills/` convention for agent skill discovery — skills committed to your repo are picked up automatically by compatible AI assistants without any manual configuration.
+
+Requirements:
+
+- `SKILL.md` must live in a subdirectory of the package, not at the package root
+- The directory name must match the `name` field in the frontmatter
+- If two dependencies ship a skill with the same directory name, the second one is skipped with a warning
 
 ## Compatibility
 
