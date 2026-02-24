@@ -1,6 +1,6 @@
 {
   "name": "depskills",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Scans installed dependencies for SKILL.md files and copies them into .agent/skills/ for AI assistants to discover",
   "author": "Giuseppe Gurgone",
   "license": "MIT",
