@@ -31,13 +31,13 @@ describe('integration', () => {
   const tmps = [];
   after(() => tmps.forEach(t => fs.rmSync(t, { recursive: true, force: true })));
 
-  it('copies skill folder to .agent/skills/<skill-name>/', () => {
+  it('copies skill folder to .agents/skills/<skill-name>/', () => {
     const tmp = makeTmp(); tmps.push(tmp);
     fs.writeFileSync(path.join(tmp, 'package.json'), JSON.stringify({ dependencies: { 'some-lib': '^1' } }));
     writeSkill(tmp, 'some-lib', 'skills/bar/SKILL.md', { name: 'bar', description: 'a skill' });
 
     assert.strictEqual(run(tmp).status, 0);
-    assert.ok(fs.existsSync(path.join(tmp, '.agent', 'skills', 'bar', 'SKILL.md')));
+    assert.ok(fs.existsSync(path.join(tmp, '.agents', 'skills', 'bar', 'SKILL.md')));
   });
 
   it('includes extra files in the copied skill folder', () => {
@@ -47,7 +47,7 @@ describe('integration', () => {
 
     run(tmp);
 
-    assert.ok(fs.existsSync(path.join(tmp, '.agent', 'skills', 'bar', 'extra.md')));
+    assert.ok(fs.existsSync(path.join(tmp, '.agents', 'skills', 'bar', 'extra.md')));
   });
 
   it('skips SKILL.md at package root and warns', () => {
@@ -56,7 +56,7 @@ describe('integration', () => {
     writeSkill(tmp, 'some-lib', 'SKILL.md', { name: 'some-lib', description: 'a skill' });
 
     const result = run(tmp);
-    assert.ok(!fs.existsSync(path.join(tmp, '.agent')));
+    assert.ok(!fs.existsSync(path.join(tmp, '.agents')));
     assert.match(result.stderr, /must be in a subdirectory/);
   });
 
@@ -66,7 +66,7 @@ describe('integration', () => {
     writeSkill(tmp, 'some-lib', 'skills/bar/SKILL.md', { name: 'baz', description: 'a skill' });
 
     const result = run(tmp);
-    assert.ok(!fs.existsSync(path.join(tmp, '.agent')));
+    assert.ok(!fs.existsSync(path.join(tmp, '.agents')));
     assert.match(result.stderr, /directory name must match/);
   });
 
@@ -78,7 +78,7 @@ describe('integration', () => {
 
     const result = run(tmp);
     assert.match(result.stderr, /collision/);
-    assert.ok(fs.existsSync(path.join(tmp, '.agent', 'skills', 'bar', 'SKILL.md')));
+    assert.ok(fs.existsSync(path.join(tmp, '.agents', 'skills', 'bar', 'SKILL.md')));
   });
 
   it('collision is deterministic: alphabetically first dep wins', () => {
@@ -89,7 +89,7 @@ describe('integration', () => {
 
     run(tmp);
 
-    const content = fs.readFileSync(path.join(tmp, '.agent', 'skills', 'bar', 'SKILL.md'), 'utf8');
+    const content = fs.readFileSync(path.join(tmp, '.agents', 'skills', 'bar', 'SKILL.md'), 'utf8');
     assert.match(content, /from lib-a/);
   });
 
@@ -110,7 +110,7 @@ describe('integration', () => {
     writeSkill(tmp, '@scope/pkg', 'skills/bar/SKILL.md', { name: 'bar', description: 'from scoped package' });
 
     assert.strictEqual(run(tmp).status, 0);
-    assert.ok(fs.existsSync(path.join(tmp, '.agent', 'skills', 'bar', 'SKILL.md')));
+    assert.ok(fs.existsSync(path.join(tmp, '.agents', 'skills', 'bar', 'SKILL.md')));
   });
 
   it('handles multiple skills from the same package', () => {
@@ -121,8 +121,8 @@ describe('integration', () => {
 
     run(tmp);
 
-    assert.ok(fs.existsSync(path.join(tmp, '.agent', 'skills', 'bar')));
-    assert.ok(fs.existsSync(path.join(tmp, '.agent', 'skills', 'baz')));
+    assert.ok(fs.existsSync(path.join(tmp, '.agents', 'skills', 'bar')));
+    assert.ok(fs.existsSync(path.join(tmp, '.agents', 'skills', 'baz')));
   });
 
   it('merges dependencies and devDependencies', () => {
@@ -136,17 +136,17 @@ describe('integration', () => {
 
     run(tmp);
 
-    assert.ok(fs.existsSync(path.join(tmp, '.agent', 'skills', 'skill-a')));
-    assert.ok(fs.existsSync(path.join(tmp, '.agent', 'skills', 'skill-b')));
+    assert.ok(fs.existsSync(path.join(tmp, '.agents', 'skills', 'skill-a')));
+    assert.ok(fs.existsSync(path.join(tmp, '.agents', 'skills', 'skill-b')));
   });
 
-  it('does not create .agent when no SKILL.md files exist', () => {
+  it('does not create .agents when no SKILL.md files exist', () => {
     const tmp = makeTmp(); tmps.push(tmp);
     fs.writeFileSync(path.join(tmp, 'package.json'), JSON.stringify({ dependencies: { 'some-lib': '^1' } }));
     fs.mkdirSync(path.join(tmp, 'node_modules', 'some-lib'), { recursive: true });
 
     assert.strictEqual(run(tmp).status, 0);
-    assert.strictEqual(fs.existsSync(path.join(tmp, '.agent')), false);
+    assert.strictEqual(fs.existsSync(path.join(tmp, '.agents')), false);
   });
 
   it('ignores SKILL.md in transitive node_modules', () => {
@@ -156,7 +156,7 @@ describe('integration', () => {
 
     run(tmp);
 
-    assert.strictEqual(fs.existsSync(path.join(tmp, '.agent')), false);
+    assert.strictEqual(fs.existsSync(path.join(tmp, '.agents')), false);
   });
 
   it('exits cleanly when package.json is missing', () => {
@@ -219,8 +219,8 @@ describe('integration', () => {
     spawnSync('git', ['commit', '-m', 'init', '--allow-empty-message'], { cwd: tmp });
 
     // manually edit a skill not from deps
-    fs.mkdirSync(path.join(tmp, '.agent', 'skills', 'hand-authored'), { recursive: true });
-    fs.writeFileSync(path.join(tmp, '.agent', 'skills', 'hand-authored', 'SKILL.md'), '---\nname: hand-authored\n---\n');
+    fs.mkdirSync(path.join(tmp, '.agents', 'skills', 'hand-authored'), { recursive: true });
+    fs.writeFileSync(path.join(tmp, '.agents', 'skills', 'hand-authored', 'SKILL.md'), '---\nname: hand-authored\n---\n');
 
     const result = run(tmp);
     assert.doesNotMatch(result.stderr, /hand-authored/);

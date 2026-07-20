@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { parseFrontmatter } from './lib.js';
 
 const projectRoot = process.cwd();
-const agentSkillsDir = path.join(projectRoot, '.agent', 'skills');
+const agentSkillsDir = path.join(projectRoot, '.agents', 'skills');
 // git output always uses '/', even on Windows
 const relSkillsDir = path.relative(projectRoot, agentSkillsDir).replace(/\\/g, '/');
 
@@ -111,7 +111,7 @@ if (toReport.length === 0) process.exit(0);
 
 process.stderr.write([
   '',
-  'depskills: skills updated in .agent/skills/',
+  'depskills: skills updated in .agents/skills/',
   '',
   ...toReport.map(({ label, name }) => `  ${label.padEnd(7)} ${name}`),
   '',
